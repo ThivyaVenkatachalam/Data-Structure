@@ -1,0 +1,99 @@
+#include <stdio.h>
+#include<stdlib.h>
+ 
+struct node{
+    int d;
+    struct node* prev;
+    struct node* next;
+};
+ 
+struct node* create()
+{
+    struct node* head=(struct node*)malloc(sizeof(struct node));
+    head->next=NULL;
+    head->prev=NULL;
+    return head;
+}
+
+void insert(struct node* head,int pos,int e)
+{
+    struct node*prev=head;
+    int i=0;
+    while(i<(pos-1) && prev->next!=NULL)
+    {
+        prev=prev->next;
+        i++;
+    }
+    if(prev==NULL)
+    {
+        printf("the size limit exceeds");
+    }
+    else
+    {
+       struct node* nn=(struct node*)malloc(sizeof(struct node));
+       nn->d=e;
+       nn->next=prev->next;
+       nn->prev=prev;
+       prev->next=nn;
+       if(nn->next!=NULL)
+        {
+           nn->next->prev=nn;
+        }
+       
+    }
+    
+}
+
+void delete(struct node* head,int e)
+{
+    struct node*prev=head;
+    if(head->next==NULL)
+    {
+        printf("LIST IS EMPTY");
+    }
+    else
+    {
+    int i=0;
+    while( prev->next!=NULL && prev->next->d!=e)
+    {
+        prev=prev->next;
+        i++;
+    }
+    if(prev==NULL)
+    {
+        printf("the size limit exceeds");
+    }
+    else
+    {
+        struct node* t=prev->next;
+        prev->next=prev->next->next;
+        if(prev->next!=NULL)
+        {
+            prev->next->prev=prev;
+            free(t);
+        }
+    }
+}
+}
+
+void display(struct node* head)
+{
+    struct node* temp=head->next;
+    while(temp!=NULL)
+    {
+        printf("%d",temp->d);
+        temp=temp->next;
+    }
+}
+int main()
+{
+    struct node* head=create();
+    insert(head,1,1);
+    insert(head,2,2);
+    insert(head,3,3);
+    display(head);
+    delete(head,4);
+    display(head);
+
+    return 0;
+}
