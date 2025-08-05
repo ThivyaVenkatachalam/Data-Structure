@@ -1,0 +1,72 @@
+#include<stdio.h>
+struct product{
+    char name[50];
+    int id;
+    float price;
+    int quantity;
+};
+struct product* AddProduct(struct product* cart,int n)
+{
+    for(int i=0;i<n;i++)
+    {
+        printf("enter product name: \n");
+        scanf("%s",cart[i].name);
+        printf("enter product id: \n");
+        scanf("%d",&cart[i].id);
+        printf("enter product price: \n");
+        scanf("%f",&cart[i].price);
+        printf("enter product quantity: \n");
+        scanf("%d",&cart[i].quantity);
+    }
+    return cart;
+}
+struct product* removeproduct(struct product* cart,int n,int ID)
+{
+    int pos;
+    for(int i=0;i<n;i++)
+    {
+        if(cart[i].id==ID)
+        {
+            pos=i;
+            break;
+        }
+    }
+    for(int i=pos+1;i<n;i++)
+    {
+        cart[i-1]=cart[i];
+    }
+    n=n-1;
+    for(int i=0;i<n;i++)
+    {
+        printf("name:%s  id:%d   price:%f     quantity:%d \n",cart[i].name,cart[i].id,cart[i].price,cart[i].quantity);
+    }
+}
+
+void display(struct product* cart,int n)
+{
+    float sum=0;
+    for(int i=0;i<n;i++)
+    {
+        sum=sum+(cart[i].price)*(cart[i].quantity);
+    }
+    printf("the total amount is: %.2f \n",sum);
+    if(sum>1000)
+    {
+        printf("you've got an 50 percent discount \n");
+        sum=sum/2;
+    }
+     printf("the offer price is: %.2f \n",sum);
+}
+int main()
+{
+    float sum;
+    int n,ID;
+    printf("enter the number of products: \n");
+    scanf("%d",&n);
+    struct product cart[n];
+     AddProduct(cart,n);
+     display(cart,n);
+     printf("id of products to be removed: \n");
+     scanf("%d",&ID);
+     removeproduct(cart,n,ID);
+}
