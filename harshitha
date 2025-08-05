@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <string.h>
+struct product {
+    char name[50];
+    int id;
+    float price;
+    int quantity;
+};
+
+void AddProduct(struct product* cart,int* n,int no) {
+    for (int i=0;i<no;i++) {
+        printf("Enter product name: ");
+        scanf("%s",cart[*n + i].name);
+        printf("Enter product id: ");
+        scanf("%d",&cart[*n + i].id);
+        printf("Enter product price: ");
+        scanf("%f",&cart[*n + i].price);
+        printf("Enter product quantity: ");
+        scanf("%d",&cart[*n + i].quantity);
+    }
+
+    *n=*n+no;
+
+    printf("\nUpdated Cart:\n");
+    for (int i=0;i<*n;i++) {
+        printf("Name: %s  ID: %d  Price: %.2f  Quantity: %d\n",
+               cart[i].name,cart[i].id,cart[i].price,cart[i].quantity);
+    }
+}
+
+void removeproduct(struct product* cart,int* n,int ID) {
+    int pos=-1;
+    for (int i=0;i<*n;i++) {
+        if (cart[i].id==ID) {
+            pos=i;
+            break;
+        }
+    }
+
+    if (pos==-1) {
+        printf("Product with ID %d not found.\n",ID);
+        return;
+    }
+
+    for (int i=pos+1;i<*n;i++) {
+        cart[i-1]=cart[i];
+    }
+
+    (*n)--;
+
+    printf("\nUpdated Cart:\n");
+    for (int i=0;i<*n;i++) {
+        printf("Name: %s  ID: %d  Price: %.2f  Quantity: %d\n",
+               cart[i].name,cart[i].id,cart[i].price,cart[i].quantity);
+    }
+}
+
+void display(struct product* cart, int n) {
+    float sum=0;
+    for (int i=0;i<n;i++) {
+        sum+=cart[i].price*cart[i].quantity;
+    }
+
+    printf("The total amount is: %.2f\n",sum);
+
+    if (sum>1000) {
+        printf("You've got a 50 percent discount\n");
+        sum/=2;
+    }
+
+    printf("The offer price is: %.2f\n",sum);
+}
+
+int main() {
+    int max=100;
+    struct product cart[100];
+    int n;
+
+    printf("Enter the initial number of products: ");
+    scanf("%d",&n);
+
+    for (int i=0; i<n;i++) {
+        printf("Enter product name: ");
+        scanf("%s",cart[i].name);
+        printf("Enter product id: ");
+        scanf("%d",&cart[i].id);
+        printf("Enter product price: ");
+        scanf("%f",&cart[i].price);
+        printf("Enter product quantity: ");
+        scanf("%d",&cart[i].quantity);
+    }
+
+    int op;
+    do {
+        printf("\nEnter an option (1-Add Product, 2-Remove Product, 3-Display, 0-Exit):");
+        scanf("%d",&op);
+
+        switch (op) {
+            case 1: {
+                int no;
+                printf("Enter the number of products to be added: ");
+                scanf("%d",&no);
+                    AddProduct(cart,&n,no);
+                break;
+            }
+
+            case 2: {
+                int ID;
+                printf("Enter the ID of the product to be removed: ");
+                scanf("%d", &ID);
+                removeproduct(cart,&n,ID);
+                break;
+            }
+
+            case 3:
+                display(cart,n);
+                break;
+
+            case 0:
+                printf("Exiting\n");
+                break;
+
+        }
+
+    } while (op!= 0);
+
+    return 0;
+}
