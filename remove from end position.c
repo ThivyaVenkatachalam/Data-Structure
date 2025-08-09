@@ -56,6 +56,12 @@ int len (struct node* head)
 }
 void delete(struct node* head,int size,int pos)
 {
+    
+    if(pos>size || pos<0)
+    {
+        printf("invalid");
+        return;
+    }
     struct node*prev=head;
     pos=size-pos+1;
     int i=0;
