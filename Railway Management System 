@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #define MAX 50
 #define MAX_PLATFORM 3
 #define MAX_QUEUE 20
