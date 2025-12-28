@@ -1,0 +1,320 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 50
+#define MAX_PLATFORM 3
+#define MAX_QUEUE 20
+
+// TRAIN STRUCTURE 
+typedef struct {
+    int number;
+    char name[50];
+    char source[30];
+    char destination[30];
+    char arrival[10];
+    char departure[10];
+    int seats;
+    char status[20];
+} Train;
+
+//TICKET STRUCTURE
+typedef struct Ticket {
+    int ticketID;
+    int trainNo;
+    char passenger[50];
+    int age;
+    struct Ticket *next;
+} Ticket;
+
+Ticket *head = NULL;
+
+// PLATFORM SYSTEM
+int platforms[MAX_PLATFORM];
+int queue[MAX_QUEUE];
+int front = -1, rear = -1;
+
+//FILE NAME
+char *trainFile = "trains.txt";
+
+// QUEUE FUNCTIONS
+int isFull() {
+    return rear == MAX_QUEUE - 1;
+}
+
+int isEmpty() {
+    return front == -1 || front > rear;
+}
+
+void enqueue(int x) {
+    if (isFull()) {
+        printf("Waiting queue full!\n");
+        return;
+    }
+    if (front == -1) front = 0;
+    queue[++rear] = x;
+}
+
+int dequeue() {
+    if (isEmpty()) return -1;
+    return queue[front++];
+}
+
+// 1. ADD TRAIN
+void addTrain() {
+    Train t;
+
+    printf("\nEnter Train Number: ");
+    scanf("%d", &t.number);
+    printf("Enter Train Name: ");
+    scanf("%s", t.name);
+    printf("Source: ");
+    scanf("%s", t.source);
+    printf("Destination: ");
+    scanf("%s", t.destination);
+    printf("Arrival Time: ");
+    scanf("%s", t.arrival);
+    printf("Departure Time: ");
+    scanf("%s", t.departure);
+    printf("Total Seats: ");
+    scanf("%d", &t.seats);
+
+    strcpy(t.status, "On-Time");
+
+    FILE *fp = fopen(trainFile, "a");
+    fwrite(&t, sizeof(Train), 1, fp);
+    fclose(fp);
+
+    printf("\nTrain Added Successfully!\n");
+}
+
+// 2. VIEW TRAINS
+void viewTrains() {
+    FILE *fp = fopen(trainFile, "r");
+    Train t;
+
+    printf("\n===== TRAIN LIST =====\n");
+
+    while (fread(&t, sizeof(Train), 1, fp)) {
+        printf("\nTrain No: %d", t.number);
+        printf("\nName: %s", t.name);
+        printf("\nFrom %s to %s", t.source, t.destination);
+        printf("\nArrival: %s  Departure: %s", t.arrival, t.departure);
+        printf("\nSeats: %d", t.seats);
+        printf("\nStatus: %s\n", t.status);
+    }
+
+    fclose(fp);
+}
+
+// 3. SEARCH TRAIN 
+void searchTrain() {
+    int num, found = 0;
+    Train t;
+
+    printf("\nEnter Train Number to Search: ");
+    scanf("%d", &num);
+
+    FILE *fp = fopen(trainFile, "r");
+
+    while (fread(&t, sizeof(Train), 1, fp)) {
+        if (t.number == num) {
+            printf("\nTrain Found!");
+            printf("\nName: %s", t.name);
+            printf("\nRoute: %s to %s", t.source, t.destination);
+            printf("\nStatus: %s\n", t.status);
+            found = 1;
+            break;
+        }
+    }
+    fclose(fp);
+
+    if (!found) printf("\nTrain Not Found!\n");
+}
+
+//4. BOOK TICKET 
+void bookTicket() {
+    Ticket *newT = (Ticket*)malloc(sizeof(Ticket));
+
+    printf("\nEnter Train Number: ");
+    scanf("%d", &newT->trainNo);
+
+    printf("Passenger Name: ");
+    scanf("%s", newT->passenger);
+
+    printf("Age: ");
+    scanf("%d", &newT->age);
+
+    newT->ticketID = rand() % 10000;
+    newT->next = head;
+    head = newT;
+
+    printf("\nTicket Booked Successfully! Ticket ID = %d\n", newT->ticketID);
+}
+
+// 5. CANCEL TICKET
+void cancelTicket() {
+    int id;
+    printf("\nEnter Ticket ID to Cancel: ");
+    scanf("%d", &id);
+
+    Ticket *temp = head, *prev = NULL;
+
+    while (temp != NULL) {
+        if (temp->ticketID == id) {
+            if (prev == NULL) head = temp->next;
+            else prev->next = temp->next;
+
+            free(temp);
+            printf("\nTicket Cancelled!\n");
+            return;
+        }
+        prev = temp;
+        temp = temp->next;
+    }
+    printf("\nTicket ID Not Found!\n");
+}
+
+//6. PASSENGER LIST 
+void passengerList() {
+    int train;
+    printf("\nEnter Train Number: ");
+    scanf("%d", &train);
+
+    Ticket *temp = head;
+    printf("\nPassengers in Train %d:\n", train);
+
+    while (temp) {
+        if (temp->trainNo == train)
+            printf("- %s\n", temp->passenger);
+        temp = temp->next;
+    }
+}
+
+//7. SEAT AVAILABILITY 
+void seatAvailability() {
+    int train, count = 0;
+    printf("\nEnter Train Number: ");
+    scanf("%d", &train);
+
+    Ticket *temp = head;
+
+    while (temp) {
+        if (temp->trainNo == train)
+            count++;
+        temp = temp->next;
+    }
+
+    printf("\nBooked Seats: %d", count);
+    printf("\nAvailable Seats: %d\n", MAX - count);
+}
+
+// 8. UPDATE STATUS 
+void updateStatus() {
+    int num;
+    char newStatus[20];
+
+    printf("\nTrain Number: ");
+    scanf("%d", &num);
+
+    printf("Enter New Status (On-Time/Delayed/Cancelled): ");
+    scanf("%s", newStatus);
+
+    FILE *fp = fopen(trainFile, "r");
+    FILE *temp = fopen("temp.txt", "w");
+
+    Train t;
+
+    while (fread(&t, sizeof(Train), 1, fp)) {
+        if (t.number == num)
+            strcpy(t.status, newStatus);
+        fwrite(&t, sizeof(Train), 1, temp);
+    }
+
+    fclose(fp);
+    fclose(temp);
+
+    remove(trainFile);
+    rename("temp.txt", trainFile);
+
+    printf("\nStatus Updated!\n");
+}
+
+//9. PLATFORM ALLOCATION 
+void platformAllocation() {
+    int train;
+    printf("\nEnter Train Number Arriving: ");
+    scanf("%d", &train);
+
+    for (int i = 0; i < MAX_PLATFORM; i++) {
+        if (platforms[i] == -1) {
+            platforms[i] = train;
+            printf("Train %d allocated to Platform %d\n", train, i + 1);
+            return;
+        }
+    }
+
+    printf("No free platform, train moved to waiting queue.\n");
+    enqueue(train);
+}
+
+void platformDeparture() {
+    int p;
+    printf("\nEnter Platform Number to clear: ");
+    scanf("%d", &p);
+    p--;
+
+    if (platforms[p] == -1) {
+        printf("Platform already empty!\n");
+        return;
+    }
+
+    printf("Train %d departed!\n", platforms[p]);
+    platforms[p] = -1;
+
+    if (!isEmpty()) {
+        int next = dequeue();
+        platforms[p] = next;
+        printf("Train %d moved from queue to Platform %d\n", next, p + 1);
+    }
+}
+
+//MAIN MENU
+int main() {
+    for (int i = 0; i < MAX_PLATFORM; i++)
+        platforms[i] = -1;
+
+    int ch;
+
+    while (1) {
+        printf("\n RAILWAY MANAGEMENT SYSTEM");
+        printf("\n1. Add Train");
+        printf("\n2. View Train List");
+        printf("\n3. Search Train");
+        printf("\n4. Book Ticket");
+        printf("\n5. Cancel Ticket");
+        printf("\n6. Passenger List");
+        printf("\n7. Seat Availability");
+        printf("\n8. Update Train Status");
+        printf("\n9. Platform Allocation");
+        printf("\n10. Exit");
+        printf("\nEnter choice: ");
+        scanf("%d", &ch);
+
+        switch (ch) {
+            case 1: addTrain(); break;
+            case 2: viewTrains(); break;
+            case 3: searchTrain(); break;
+            case 4: bookTicket(); break;
+            case 5: cancelTicket(); break;
+            case 6: passengerList(); break;
+            case 7: seatAvailability(); break;
+            case 8: updateStatus(); break;
+            case 9: platformAllocation(); break;
+            case 10: exit(0);
+            default: printf("\nInvalid Choice!\n");
+        }
+    }
+
+    return 0;
+}
